@@ -3,9 +3,11 @@ export default function Home() {
     <main
       style={{
         minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: "48px 24px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        padding: "96px 24px 48px",
+        overflow: "hidden",
         background: "#000000",
       }}
     >
