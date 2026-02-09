@@ -42,6 +42,7 @@ export default function CaptionsPage() {
   const [rankMap, setRankMap] = useState(null);
   const [rankTotal, setRankTotal] = useState(0);
   const [expandedItem, setExpandedItem] = useState(null);
+  const [session, setSession] = useState(null);
 
   const isLikesSort = sortMode === "likes_asc" || sortMode === "likes_desc";
 
@@ -97,9 +98,39 @@ export default function CaptionsPage() {
   }
 
   useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) {
+        setSession(data.session ?? null);
+      }
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession ?? null);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     let isActive = true;
     setLoading(true);
     setError(null);
+
+    if (!session) {
+      setItems([]);
+      setHasMore(false);
+      setLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
 
     fetchPage(0, false)
       .catch((err) => {
@@ -116,10 +147,18 @@ export default function CaptionsPage() {
     return () => {
       isActive = false;
     };
-  }, [sortMode]);
+  }, [sortMode, session]);
 
   useEffect(() => {
     let isActive = true;
+
+    if (!session) {
+      setRankMap(null);
+      setRankTotal(0);
+      return () => {
+        isActive = false;
+      };
+    }
 
     async function buildRankLookup() {
       const { data, error: rankError } = await supabase
@@ -158,7 +197,15 @@ export default function CaptionsPage() {
     return () => {
       isActive = false;
     };
-  }, [sortMode]);
+  }, [sortMode, session]);
+
+  const handleSignIn = async () => {
+    const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+  };
 
   async function handleViewMore() {
     if (loadingMore || loading) return;
@@ -316,6 +363,36 @@ export default function CaptionsPage() {
                 Like count: {expandedItem.like_count ?? 0}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {!session && (
+        <div
+          className="auth-guard"
+          onClick={() => {
+            window.location.href = "/";
+          }}
+          role="presentation"
+        >
+          <div
+            className="auth-guard__card"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="auth-guard__close"
+              onClick={() => {
+                window.location.href = "/";
+              }}
+              aria-label="Close sign-in prompt"
+            >
+              ×
+            </button>
+            <h2>Sign in to view this page</h2>
+            <button type="button" onClick={handleSignIn}>
+              Sign in with Google
+            </button>
           </div>
         </div>
       )}

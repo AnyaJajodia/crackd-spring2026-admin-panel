@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SideNav from "../components/SideNav";
+import PageTransition from "../components/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <div className="app-shell">
           <SideNav />
-          <div className="app-main">{children}</div>
+          <div className="app-main">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </div>
       </body>
     </html>
