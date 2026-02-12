@@ -455,18 +455,19 @@ a {
 }
 
 .page-transition {
+  position: relative;
   animation: page-slide-in 0.35s ease both;
-  will-change: transform, opacity;
+  will-change: top, opacity;
 }
 
 @keyframes page-slide-in {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    top: 16px;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    top: 0;
   }
 }
 
