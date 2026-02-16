@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabaseClient";
 const navItems = [
   { href: "/", label: "Hello World" },
   { href: "/captions", label: "Captions List" },
+  { href: "/ratings", label: "Ratings" },
 ];
 
 export default function SideNav() {
