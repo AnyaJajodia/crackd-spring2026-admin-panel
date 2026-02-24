@@ -500,6 +500,299 @@ a {
   cursor: not-allowed;
 }
 
+.gen-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: center;
+  padding: 96px 24px 48px;
+}
+
+.gen-start {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  max-width: 720px;
+}
+
+.gen-start h1 {
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.gen-start__button {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+
+.gen-start__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gen-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 48px 24px;
+}
+
+.gen-modal {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 28px;
+  border-radius: 20px;
+  min-width: min(85vw, 720px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.gen-section {
+  display: grid;
+  gap: 18px;
+  text-align: center;
+}
+
+.gen-section h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.gen-dropzone {
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 18px;
+  padding: 28px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gen-dropzone.is-active {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gen-dropzone button,
+.gen-primary,
+.gen-secondary {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+
+.gen-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gen-supported {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.gen-error {
+  color: #ffb3b3;
+  font-size: 0.9rem;
+}
+
+.gen-progress {
+  display: grid;
+  gap: 10px;
+}
+
+.gen-progress__step {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gen-progress__step.is-active {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gen-note {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.gen-card {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+}
+
+.gen-card img {
+  width: min(70vw, 520px);
+  max-height: 55vh;
+  border-radius: 14px;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #0b0b0b;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.65);
+}
+
+.gen-carousel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.gen-carousel__nav {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.gen-carousel__text {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: opacity 0.2s ease;
+}
+
+.gen-carousel__count {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.yourcaps-page {
+  padding: 64px 48px 120px;
+}
+
+.yourcaps-header h1 {
+  margin: 0 0 24px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.yourcaps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.yourcaps-thumb {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.yourcaps-thumb img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.yourcaps-state,
+.yourcaps-empty {
+  color: rgba(255, 255, 255, 0.7);
+  padding: 20px 0;
+}
+
+.yourcaps-empty a {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.yourcaps-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 48px 24px;
+}
+
+.yourcaps-modal {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 28px;
+  border-radius: 20px;
+  min-width: min(85vw, 720px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.yourcaps-card {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+}
+
+.yourcaps-card img {
+  width: min(70vw, 520px);
+  max-height: 55vh;
+  border-radius: 14px;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #0b0b0b;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.65);
+}
+
+.yourcaps-carousel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.yourcaps-carousel__nav {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.yourcaps-carousel__text {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: opacity 0.2s ease;
+}
+
+.yourcaps-carousel__count {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
 .ratings-overlay {
   position: fixed;
   inset: 0;

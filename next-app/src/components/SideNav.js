@@ -9,6 +9,8 @@ const navItems = [
   { href: "/", label: "Hello World" },
   { href: "/captions", label: "Captions List" },
   { href: "/ratings", label: "Ratings" },
+  { href: "/generate", label: "Generate" },
+  { href: "/your-captions", label: "Your Captions" },
 ];
 
 export default function SideNav() {
