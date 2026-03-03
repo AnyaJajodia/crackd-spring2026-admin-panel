@@ -14,6 +14,10 @@ type VoteRow = {
   vote_value: number | null;
 };
 
+type ChartRow = {
+  name: string;
+} & Record<string, number | string>;
+
 const getCaptionMetrics = cache(async () => {
   const captions = await fetchAllFromTable<CaptionRow>("captions", "id,content");
   const votes = await fetchAllFromTable<VoteRow>("caption_votes", "caption_id,vote_value");
@@ -78,17 +82,35 @@ const getCaptionMetrics = cache(async () => {
     lengthCounts[group][lengthBucket] += 1;
   });
 
-  const openerData = [
-    { name: "Upvote", ...openerCounts.Upvote },
-    { name: "Downvote", ...openerCounts.Downvote },
-  ];
+  const buildPercentageRows = (
+    counts: Record<string, Record<string, number>>,
+    buckets: readonly string[]
+  ): ChartRow[] => {
+    return buckets.map((bucket) => {
+      const upvotes = counts.Upvote[bucket] ?? 0;
+      const downvotes = counts.Downvote[bucket] ?? 0;
+      const total = upvotes + downvotes;
 
-  const lengthData = [
-    { name: "Upvote", ...lengthCounts.Upvote },
-    { name: "Downvote", ...lengthCounts.Downvote },
-  ];
+      return {
+        name: bucket,
+        Upvote: total > 0 ? (upvotes / total) * 100 : 0,
+        UpvoteCount: upvotes,
+        Downvote: total > 0 ? (downvotes / total) * 100 : 0,
+        DownvoteCount: downvotes,
+      };
+    });
+  };
 
-  return { openerData, lengthData, openerBuckets: openerBuckets as string[] };
+  const openerData = buildPercentageRows(openerCounts, openerBuckets);
+  const lengthData = buildPercentageRows(lengthCounts, lengthBuckets);
+
+  openerData.forEach((row) => {
+    if (row.name === "pov") {
+      row.name = "POV";
+    }
+  });
+
+  return { openerData, lengthData };
 });
 
 export default async function CaptionsPage({
@@ -97,7 +119,7 @@ export default async function CaptionsPage({
   searchParams?: Promise<{ bootstrapped?: string }>;
 }) {
   await requireSuperadmin();
-  const { openerData, lengthData, openerBuckets } = await getCaptionMetrics();
+  const { openerData, lengthData } = await getCaptionMetrics();
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
   const steps = [
@@ -105,18 +127,18 @@ export default async function CaptionsPage({
       title: "Overused Openers",
       subtitle: "Top 3 most recurring openers + other. Top openers are identified by normalizing each caption, taking pov as its own opener if it starts with POV, otherwise using the first two words, then ranking by frequency across all captions.",
       description:
-        "Counts upvotes and downvotes for each opener bucket to surface fatigue signals.",
-      legend: openerBuckets.map((item) => (item === "pov" ? "POV" : item)),
-      keys: openerBuckets,
+        "Shows the upvote and downvote percentage for each opener bucket, with raw vote counts displayed inside the bars.",
+      legend: ["Upvote", "Downvote"],
+      keys: ["Upvote", "Downvote"],
       data: openerData,
     },
     {
       title: "Length Distribution vs votes",
       subtitle: "Caption length buckets and vote polarity.",
       description:
-        "Compares short, medium, and long captions to highlight sentiment shifts.",
-      legend: ["Short", "Medium", "Long"],
-      keys: ["Short", "Medium", "Long"],
+        "Shows the upvote and downvote percentage for each length bucket, with raw vote counts displayed inside the bars.",
+      legend: ["Upvote", "Downvote"],
+      keys: ["Upvote", "Downvote"],
       data: lengthData,
     },
   ];

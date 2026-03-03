@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -28,7 +29,8 @@ type CaptionStepperProps = {
   bootstrapped?: "success" | "already";
 };
 
-const chartColors = ["#2f4858", "#8c5e2f", "#d89d5f", "#e8cfa5"];
+const chartColors = ["#9BC4B3", "#C62128"];
+
 
 export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -50,6 +52,7 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
         const next: Record<string, number | string> = { ...item };
         steps[index].keys.forEach((key) => {
           next[key] = 0;
+          next[`${key}Count`] = 0;
         });
         return next;
       });
@@ -133,9 +136,24 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
               <BarChart data={chartData} barGap={12} barCategoryGap={24}>
                 <CartesianGrid strokeDasharray="4 4" stroke="rgba(40,40,40,0.08)" />
                 <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  domain={[0, 100]}
+                  tickFormatter={(value: number) => `${value}%`}
+                />
                 <Tooltip
                   cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                  formatter={(value, name, item) => {
+                    const count = Number(
+                      (item.payload as Record<string, number | string> | undefined)?.[
+                        `${String(item.dataKey)}Count`
+                      ] ?? 0
+                    );
+
+                    return [`${Number(value).toFixed(1)}% (${count})`, name];
+                  }}
+                  labelFormatter={(label) => `${label}`}
                   contentStyle={{
                     borderRadius: 12,
                     borderColor: "rgba(0,0,0,0.1)",
@@ -149,7 +167,15 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
                     fill={chartColors[index % chartColors.length]}
                     radius={[10, 10, 0, 0]}
                     isAnimationActive
-                  />
+                  >
+                    <LabelList
+                      dataKey={`${key}Count`}
+                      position="center"
+                      fill="#ffffff"
+                      fontSize={11}
+                      fontWeight={600}
+                    />
+                  </Bar>
                 ))}
               </BarChart>
             </ResponsiveContainer>
