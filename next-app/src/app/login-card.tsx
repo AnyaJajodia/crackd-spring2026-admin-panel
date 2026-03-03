@@ -12,7 +12,7 @@ export default function LoginCard() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_ADMIN}/auth/callback`,
       },
     });
   };
