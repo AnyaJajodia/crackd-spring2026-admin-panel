@@ -86,7 +86,7 @@ export default async function AlignmentPage() {
       <div className="space-y-2">
         <h1 className="font-display text-3xl font-semibold">Image–Caption Alignment</h1>
         <p className="text-sm text-muted-foreground">
-          Consistent images earn steady upvotes across captions. Controversial images
+          Consistent images earn a similar amount of upvotes and downvotes across captions. Controversial images
           split the room with mixed sentiment and high engagement.
         </p>
       </div>

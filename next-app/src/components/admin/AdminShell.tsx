@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ChevronLeft, ChevronRight, Image, Menu, User } from "lucide-react";
+import { BarChart3, ChevronLeft, FileText, Image, Menu, User, Users } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -17,7 +17,10 @@ type AdminShellProps = {
 };
 
 const navItems = [
-  { href: "/admin/captions", label: "Caption Stats", icon: BarChart3 },
+  { href: "/admin/captions", label: "Captions", icon: FileText },
+  { href: "/admin/captions-stats", label: "Caption Stats", icon: BarChart3 },
+  { href: "/admin/images", label: "Images", icon: Image },
+  { href: "/admin/profiles", label: "Profiles", icon: Users },
   { href: "/admin/alignment", label: "Alignment Stats", icon: Image },
 ];
 
