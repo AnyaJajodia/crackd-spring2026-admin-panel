@@ -29,7 +29,10 @@ type CaptionStepperProps = {
   bootstrapped?: "success" | "already";
 };
 
-const chartColors = ["#9BC4B3", "#C62128"];
+const chartStyles = [
+  { fill: "#ecfdf5", stroke: "#6ee7b7", label: "#047857" },
+  { fill: "#fef2f2", stroke: "#fecaca", label: "#b91c1c" },
+];
 
 
 export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
@@ -164,14 +167,16 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
                   <Bar
                     key={key}
                     dataKey={key}
-                    fill={chartColors[index % chartColors.length]}
+                    fill={chartStyles[index % chartStyles.length].fill}
+                    stroke={chartStyles[index % chartStyles.length].stroke}
+                    strokeWidth={1.5}
                     radius={[10, 10, 0, 0]}
                     isAnimationActive
                   >
                     <LabelList
                       dataKey={`${key}Count`}
                       position="center"
-                      fill="#ffffff"
+                      fill={chartStyles[index % chartStyles.length].label}
                       fontSize={11}
                       fontWeight={600}
                     />
@@ -194,7 +199,7 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
                 <div key={label} className="flex items-center gap-2">
                   <span
                     className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: chartColors[index % chartColors.length] }}
+                    style={{ backgroundColor: chartStyles[index % chartStyles.length].fill }}
                   />
                   {label}
                 </div>
