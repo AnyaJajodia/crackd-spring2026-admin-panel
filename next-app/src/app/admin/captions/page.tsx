@@ -23,23 +23,18 @@ const getCaptionMetrics = cache(async () => {
     captionMap.set(caption.id, caption.content ?? "");
   });
 
-  const openerBuckets = ["me when", "when you", "pov", "other"] as const;
   const lengthBuckets = ["Short", "Medium", "Long"] as const;
-  const openerCounts: Record<string, Record<string, number>> = {
-    Upvote: Object.fromEntries(openerBuckets.map((bucket) => [bucket, 0])),
-    Downvote: Object.fromEntries(openerBuckets.map((bucket) => [bucket, 0])),
-  };
   const lengthCounts: Record<string, Record<string, number>> = {
     Upvote: Object.fromEntries(lengthBuckets.map((bucket) => [bucket, 0])),
     Downvote: Object.fromEntries(lengthBuckets.map((bucket) => [bucket, 0])),
   };
 
-  const classifyOpener = (content: string) => {
+  const normalizeOpener = (content: string) => {
     const normalized = content.trim().toLowerCase();
-    if (normalized.startsWith("me when")) return "me when";
-    if (normalized.startsWith("when you")) return "when you";
-    if (normalized.startsWith("pov")) return "pov";
-    return "other";
+    if (!normalized) return "";
+    const tokens = normalized.split(/\s+/).filter(Boolean);
+    if (tokens[0] === "pov") return "pov";
+    return tokens.slice(0, 2).join(" ");
   };
 
   const classifyLength = (content: string) => {
@@ -47,6 +42,29 @@ const getCaptionMetrics = cache(async () => {
     if (words <= 7) return "Short";
     if (words <= 13) return "Medium";
     return "Long";
+  };
+
+  const openerFrequency = new Map<string, number>();
+  (captions as CaptionRow[]).forEach((caption) => {
+    const opener = normalizeOpener(caption.content ?? "");
+    if (!opener) return;
+    openerFrequency.set(opener, (openerFrequency.get(opener) ?? 0) + 1);
+  });
+
+  const topOpeners = Array.from(openerFrequency.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([opener]) => opener);
+
+  const openerBuckets = [...topOpeners, "other"];
+  const openerCounts: Record<string, Record<string, number>> = {
+    Upvote: Object.fromEntries(openerBuckets.map((bucket) => [bucket, 0])),
+    Downvote: Object.fromEntries(openerBuckets.map((bucket) => [bucket, 0])),
+  };
+
+  const classifyOpener = (content: string) => {
+    const opener = normalizeOpener(content);
+    return topOpeners.includes(opener) ? opener : "other";
   };
 
   (votes as VoteRow[]).forEach((vote) => {
@@ -70,7 +88,7 @@ const getCaptionMetrics = cache(async () => {
     { name: "Downvote", ...lengthCounts.Downvote },
   ];
 
-  return { openerData, lengthData };
+  return { openerData, lengthData, openerBuckets: openerBuckets as string[] };
 });
 
 export default async function CaptionsPage({
@@ -79,17 +97,17 @@ export default async function CaptionsPage({
   searchParams?: Promise<{ bootstrapped?: string }>;
 }) {
   await requireSuperadmin();
-  const { openerData, lengthData } = await getCaptionMetrics();
+  const { openerData, lengthData, openerBuckets } = await getCaptionMetrics();
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
   const steps = [
     {
       title: "Overused Openers",
-      subtitle: "Opening phrases and their sentiment split.",
+      subtitle: "Top 3 most recurring openers + other. Top openers are identified by normalizing each caption, taking pov as its own opener if it starts with POV, otherwise using the first two words, then ranking by frequency across all captions.",
       description:
         "Counts upvotes and downvotes for each opener bucket to surface fatigue signals.",
-      legend: ["me when", "when you", "POV", "other"],
-      keys: ["me when", "when you", "pov", "other"],
+      legend: openerBuckets.map((item) => (item === "pov" ? "POV" : item)),
+      keys: openerBuckets,
       data: openerData,
     },
     {
