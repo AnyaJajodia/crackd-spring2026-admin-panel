@@ -148,13 +148,22 @@ export function CaptionStepper({ steps, bootstrapped }: CaptionStepperProps) {
                 <Tooltip
                   cursor={{ fill: "rgba(0,0,0,0.05)" }}
                   formatter={(value, name, item) => {
+                    const keyIndex = activeStep.keys.indexOf(String(item.dataKey));
+                    const tooltipColor =
+                      chartStyles[(keyIndex >= 0 ? keyIndex : 0) % chartStyles.length].label;
                     const count = Number(
                       (item.payload as Record<string, number | string> | undefined)?.[
                         `${String(item.dataKey)}Count`
                       ] ?? 0
                     );
 
-                    return [`${Number(value).toFixed(1)}% (${count})`, name];
+                    return [
+                      <span key={`${String(item.dataKey)}-value`}>
+                        <span style={{ color: tooltipColor }}>{Number(value).toFixed(1)}%</span>
+                        <span style={{ color: "#475569" }}> ({count})</span>
+                      </span>,
+                      name,
+                    ];
                   }}
                   labelFormatter={(label) => `${label}`}
                   contentStyle={{
