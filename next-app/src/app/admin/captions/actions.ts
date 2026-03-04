@@ -76,9 +76,16 @@ export async function getCaptionsPage(
     throw new Error(dataResult.error.message);
   }
 
-  const rows = (dataResult.data ?? []) as Omit<CaptionManagementRow, "image_url">[];
+  const rows = (dataResult.data ?? []) as Omit<
+    CaptionManagementRow,
+    "image_url" | "humor_flavor_slug" | "llm_prompt_chain_label"
+  >[];
   const imageIds = Array.from(new Set(rows.map((row) => row.image_id).filter(Boolean))) as string[];
+  const humorFlavorIds = Array.from(
+    new Set(rows.map((row) => row.humor_flavor_id).filter((value): value is number => value != null))
+  );
   const imageUrlMap = new Map<string, string | null>();
+  const humorFlavorMap = new Map<number, string | null>();
 
   if (imageIds.length > 0) {
     const imageResult = await admin.from("images").select("id,url").in("id", imageIds);
@@ -91,6 +98,21 @@ export async function getCaptionsPage(
     });
   }
 
+  if (humorFlavorIds.length > 0) {
+    const flavorResult = await admin
+      .from("humor_flavors")
+      .select("id,slug")
+      .in("id", humorFlavorIds);
+
+    if (flavorResult.error) {
+      throw new Error(flavorResult.error.message);
+    }
+
+    (flavorResult.data ?? []).forEach((flavor) => {
+      humorFlavorMap.set(flavor.id as number, (flavor.slug as string | null) ?? null);
+    });
+  }
+
   return {
     page,
     pageSize,
@@ -99,6 +121,10 @@ export async function getCaptionsPage(
     rows: rows.map((row) => ({
       ...row,
       image_url: row.image_id ? imageUrlMap.get(row.image_id) ?? null : null,
+      humor_flavor_slug:
+        row.humor_flavor_id != null ? humorFlavorMap.get(row.humor_flavor_id) ?? null : null,
+      llm_prompt_chain_label:
+        row.llm_prompt_chain_id != null ? `Prompt Chain #${row.llm_prompt_chain_id}` : null,
     })),
   };
 }

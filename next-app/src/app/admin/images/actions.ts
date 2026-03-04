@@ -103,3 +103,16 @@ export async function updateImageRow(payload: ImageUpdateInput): Promise<ImageMa
 
   return result.data;
 }
+
+export async function deleteImageRow(id: string): Promise<{ id: string }> {
+  await requireSuperadmin();
+
+  const admin = createSupabaseAdminClient();
+  const result = await admin.from("images").delete().eq("id", id);
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+
+  return { id };
+}

@@ -2,9 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, Loader2, Pencil, Save, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { ChevronDown } from "lucide-react";
 
 import {
   AdminManagementLayout,
@@ -14,8 +12,7 @@ import {
   ThumbnailSquare,
 } from "@/components/admin/AdminManagementLayout";
 import { useDebouncedValue } from "@/components/admin/useDebouncedValue";
-import { Button } from "@/components/ui/button";
-import { getCaptionsPage, updateCaptionRow } from "@/app/admin/captions/actions";
+import { getCaptionsPage } from "@/app/admin/captions/actions";
 import {
   type CaptionManagementRow,
   type CaptionsFilterState,
@@ -28,28 +25,18 @@ type CaptionsManagementClientProps = {
   initialFilters: CaptionsFilterState;
 };
 
-type CaptionDraft = {
-  is_public: boolean;
-  is_featured: boolean;
-};
-
-function BooleanSelect(props: {
-  value: boolean;
-  trueLabel: string;
-  falseLabel: string;
-  onChange: (value: boolean) => void;
+function InfoCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
 }) {
-  const { value, trueLabel, falseLabel, onChange } = props;
-
   return (
-    <select
-      value={value ? "true" : "false"}
-      onChange={(event) => onChange(event.target.value === "true")}
-      className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-red-400"
-    >
-      <option value="true">{trueLabel}</option>
-      <option value="false">{falseLabel}</option>
-    </select>
+    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <p className="mb-2 text-[11px] uppercase tracking-[0.22em] text-slate-500">{label}</p>
+      <p className="break-all text-sm text-slate-800">{value}</p>
+    </div>
   );
 }
 
@@ -57,7 +44,6 @@ export function CaptionsManagementClient({
   initialData,
   initialFilters,
 }: CaptionsManagementClientProps) {
-  const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [filters, setFilters] = React.useState(initialFilters);
   const [searchInput, setSearchInput] = React.useState(initialFilters.search);
@@ -65,26 +51,21 @@ export function CaptionsManagementClient({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [draft, setDraft] = React.useState<CaptionDraft | null>(null);
-  const [savingId, setSavingId] = React.useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(searchInput, 250);
 
-  const loadRecords = React.useCallback(
-    async (nextFilters: CaptionsFilterState) => {
-      setLoading(true);
-      setError(null);
-      try {
+  const loadRecords = React.useCallback(async (nextFilters: CaptionsFilterState) => {
+    setLoading(true);
+    setError(null);
+
+    try {
       const nextData = await getCaptionsPage(nextFilters);
-        setData(nextData);
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Failed to load captions.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+      setData(nextData);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Failed to load captions.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
     setData(initialData);
@@ -108,47 +89,6 @@ export function CaptionsManagementClient({
 
   const updateFilters = (updater: (current: CaptionsFilterState) => CaptionsFilterState) => {
     React.startTransition(() => setFilters((current) => updater(current)));
-  };
-
-  const startEditing = (row: CaptionManagementRow) => {
-    setExpandedId(row.id);
-    setEditingId(row.id);
-    setDraft({
-      is_public: Boolean(row.is_public),
-      is_featured: Boolean(row.is_featured),
-    });
-  };
-
-  const handleSave = async (row: CaptionManagementRow) => {
-    if (!draft) return;
-
-    const previousRows = data.rows;
-    setSavingId(row.id);
-    setData((current) => ({
-      ...current,
-      rows: current.rows.map((item) =>
-        item.id === row.id ? { ...item, is_public: draft.is_public, is_featured: draft.is_featured } : item
-      ),
-    }));
-
-    try {
-      const updated = await updateCaptionRow({ id: row.id, ...draft });
-      setData((current) => ({
-        ...current,
-        rows: current.rows.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)),
-      }));
-      setEditingId(null);
-      setDraft(null);
-      toast.success("Saved");
-      const refreshed = await getCaptionsPage(filters);
-      setData(refreshed);
-      router.refresh();
-    } catch (saveError) {
-      setData((current) => ({ ...current, rows: previousRows }));
-      toast.error(saveError instanceof Error ? saveError.message : "Failed to save caption.");
-    } finally {
-      setSavingId(null);
-    }
   };
 
   return (
@@ -217,7 +157,6 @@ export function CaptionsManagementClient({
       >
         {data.rows.map((row) => {
           const isExpanded = expandedId === row.id;
-          const isEditing = editingId === row.id && draft;
 
           return (
             <div
@@ -227,18 +166,17 @@ export function CaptionsManagementClient({
               <button
                 type="button"
                 onClick={() =>
-                  setExpandedId((current) => {
-                    const next = current === row.id ? null : row.id;
-                    if (next !== row.id) {
-                      setEditingId(null);
-                      setDraft(null);
-                    }
-                    return next;
-                  })
+                  setExpandedId((current) => (current === row.id ? null : row.id))
                 }
-                className="grid w-full grid-cols-[72px_minmax(0,1fr)_auto_auto_auto_32px] items-center gap-4 px-4 py-4 text-left transition hover:bg-slate-50"
+                className="grid w-full grid-cols-[72px_minmax(0,1fr)_auto_auto_auto_32px] items-center gap-4 px-4 py-3 text-left transition hover:bg-slate-50"
               >
-                <ThumbnailSquare src={row.image_url} alt={row.content ?? "Caption image"} />
+                <div className="flex h-14 w-[72px] items-center">
+                  <ThumbnailSquare
+                    src={row.image_url}
+                    alt={row.content ?? "Caption image"}
+                    className="h-16 w-16"
+                  />
+                </div>
                 <p className="overflow-hidden text-sm font-medium text-slate-900 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
                   {row.content ?? "No caption text."}
                 </p>
@@ -252,12 +190,15 @@ export function CaptionsManagementClient({
                   {row.like_count ?? 0}
                 </span>
                 <ChevronDown
-                  className={cn("h-5 w-5 shrink-0 justify-self-end text-slate-500 transition", isExpanded && "rotate-180")}
+                  className={cn(
+                    "h-5 w-5 shrink-0 justify-self-end text-slate-500 transition",
+                    isExpanded && "rotate-180"
+                  )}
                 />
               </button>
 
               <AnimatePresence initial={false}>
-                {isExpanded && (
+                {isExpanded ? (
                   <motion.div
                     initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
                     animate={reduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
@@ -265,112 +206,30 @@ export function CaptionsManagementClient({
                     transition={{ duration: reduceMotion ? 0.12 : 0.24 }}
                     className="overflow-hidden border-t border-slate-200"
                   >
-                    <div className="space-y-5 px-5 py-5">
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <FieldBlock label="Visibility">
-                          {isEditing ? (
-                            <BooleanSelect
-                              value={draft.is_public}
-                              trueLabel="Public"
-                              falseLabel="Private"
-                              onChange={(value) =>
-                                setDraft((current) => (current ? { ...current, is_public: value } : current))
-                              }
-                            />
-                          ) : (
-                            <BooleanBadge value={row.is_public} trueLabel="Public" falseLabel="Private" />
-                          )}
-                        </FieldBlock>
-                        <FieldBlock label="Featured">
-                          {isEditing ? (
-                            <BooleanSelect
-                              value={draft.is_featured}
-                              trueLabel="Featured"
-                              falseLabel="Not featured"
-                              onChange={(value) =>
-                                setDraft((current) => (current ? { ...current, is_featured: value } : current))
-                              }
-                            />
-                          ) : (
-                            <BooleanBadge value={row.is_featured} trueLabel="Featured" falseLabel="Not featured" />
-                          )}
-                        </FieldBlock>
-                      </div>
-
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <FieldBlock label="Humor flavor ID">
-                          <p className="break-all text-sm text-slate-700">{row.humor_flavor_id ?? "--"}</p>
-                        </FieldBlock>
-                        <FieldBlock label="Profile ID">
-                          <p className="break-all text-sm text-slate-700">{row.profile_id ?? "--"}</p>
-                        </FieldBlock>
-                        <FieldBlock label="Image ID">
-                          <p className="break-all text-sm text-slate-700">{row.image_id ?? "--"}</p>
-                        </FieldBlock>
-                        <FieldBlock label="Created">
-                          <p className="text-sm text-slate-700">
-                            {row.created_datetime_utc ? new Date(row.created_datetime_utc).toLocaleString() : "--"}
-                          </p>
-                        </FieldBlock>
-                      </div>
-
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        {isEditing ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingId(null);
-                                setDraft(null);
-                              }}
-                              className="rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                            >
-                              <X className="h-4 w-4" />
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => void handleSave(row)}
-                              disabled={savingId === row.id}
-                              className="rounded-full bg-red-500 text-white hover:bg-red-400"
-                            >
-                              {savingId === row.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Save className="h-4 w-4" />
-                              )}
-                              Confirm
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => startEditing(row)}
-                            className="rounded-full bg-red-500 text-white hover:bg-red-400"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit
-                          </Button>
-                        )}
-                      </div>
+                    <div className="grid gap-4 px-5 py-5 lg:grid-cols-2 xl:grid-cols-3">
+                      <InfoCard label="Caption ID" value={row.id} />
+                      <InfoCard label="Image ID" value={row.image_id ?? "--"} />
+                      <InfoCard
+                        label="Humor Flavor"
+                        value={row.humor_flavor_slug ?? "Unknown flavor"}
+                      />
+                      <InfoCard
+                        label="Featured"
+                        value={row.is_featured ? "Featured" : "Not featured"}
+                      />
+                      <InfoCard label="Like Count" value={String(row.like_count ?? 0)} />
+                      <InfoCard
+                        label="LLM Prompt Chain"
+                        value={row.llm_prompt_chain_label ?? "No prompt chain"}
+                      />
                     </div>
                   </motion.div>
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
           );
         })}
       </ManagementTableState>
     </AdminManagementLayout>
-  );
-}
-
-function FieldBlock(props: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-      <p className="mb-2 text-[11px] uppercase tracking-[0.22em] text-slate-500">{props.label}</p>
-      {props.children}
-    </div>
   );
 }

@@ -178,11 +178,24 @@ export function ManagementTableState({
   return <div className={cn("space-y-3 transition-opacity", loading && "opacity-70")}>{children}</div>;
 }
 
-export function ThumbnailSquare({ src, alt }: { src?: string | null; alt: string }) {
+export function ThumbnailSquare({
+  src,
+  alt,
+  className,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+}) {
   const [failed, setFailed] = React.useState(false);
 
   return (
-    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-200">
+    <div
+      className={cn(
+        "relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-200",
+        className
+      )}
+    >
       {!src || failed ? (
         <div className="flex h-full w-full items-center justify-center text-[10px] uppercase tracking-[0.24em] text-slate-500">
           No Img
@@ -192,6 +205,31 @@ export function ThumbnailSquare({ src, alt }: { src?: string | null; alt: string
           src={src}
           alt={alt}
           className="h-full w-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
+export function LargeImagePreview({ src, alt }: { src?: string | null; alt: string }) {
+  const [failed, setFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  return (
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-200">
+      {!src || failed ? (
+        <div className="flex h-full w-full items-center justify-center text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
+          No Preview
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          className="h-full w-full object-contain bg-white"
           onError={() => setFailed(true)}
         />
       )}

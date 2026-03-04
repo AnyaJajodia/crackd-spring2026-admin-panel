@@ -58,6 +58,8 @@ export type CaptionManagementRow = {
   like_count: number | null;
   llm_prompt_chain_id: number | null;
   image_url: string | null;
+  humor_flavor_slug: string | null;
+  llm_prompt_chain_label: string | null;
 };
 
 export type CaptionUpdateInput = {
