@@ -96,3 +96,226 @@ export type ProfileUpdateInput = {
   id: string;
   changes: ProfileUpdateChanges;
 };
+
+export type LookupOption = {
+  value: string;
+  label: string;
+  description?: string | null;
+};
+
+export type HumorFlavorsFilterState = PaginationQuery & {
+  stepStatus: "all" | "has_steps" | "no_steps";
+  sort: "newest" | "oldest";
+};
+
+export type HumorFlavorManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  description: string | null;
+  slug: string;
+  step_count: number;
+};
+
+export type HumorFlavorStepsFilterState = PaginationQuery & {
+  humorFlavorIds: string;
+  llmModelIds: string;
+  sort: "created_desc" | "order_asc" | "order_desc";
+};
+
+export type HumorFlavorStepManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  humor_flavor_id: number;
+  humor_flavor_slug: string | null;
+  llm_temperature: number | null;
+  order_by: number;
+  llm_input_type_id: number;
+  llm_input_type_slug: string | null;
+  llm_output_type_id: number;
+  llm_output_type_slug: string | null;
+  llm_model_id: number;
+  llm_model_name: string | null;
+  humor_flavor_step_type_id: number;
+  humor_flavor_step_type_slug: string | null;
+  llm_system_prompt: string | null;
+  llm_user_prompt: string | null;
+  description: string | null;
+};
+
+export type HumorMixFilterState = PaginationQuery;
+
+export type HumorMixManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  humor_flavor_id: number;
+  humor_flavor_slug: string | null;
+  humor_flavor_description: string | null;
+  caption_count: number;
+};
+
+export type HumorMixUpdateInput = {
+  id: number;
+  caption_count: number;
+};
+
+export type TermsFilterState = PaginationQuery;
+
+export type TermManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  modified_datetime_utc: string | null;
+  term: string;
+  definition: string;
+  example: string;
+  priority: number;
+  term_type_id: number | null;
+  term_type_name: string | null;
+};
+
+export type TermMutationInput = {
+  id?: number;
+  term: string;
+  definition: string;
+  example: string;
+  priority: number;
+  term_type_id: number | null;
+};
+
+export type CaptionRequestsFilterState = PaginationQuery & {
+  activity: "all" | "has_prompt_chains" | "has_responses";
+};
+
+export type CaptionRequestManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  profile_id: string;
+  profile_email: string | null;
+  profile_name: string | null;
+  image_id: string;
+  image_url: string | null;
+  image_description: string | null;
+  prompt_chain_count: number;
+  response_count: number;
+};
+
+export type CaptionExamplesFilterState = PaginationQuery;
+
+export type CaptionExampleManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  modified_datetime_utc: string | null;
+  image_description: string;
+  caption: string;
+  explanation: string;
+  priority: number;
+  image_id: string | null;
+  image_url: string | null;
+};
+
+export type CaptionExampleMutationInput = {
+  id?: number;
+  image_description: string;
+  caption: string;
+  explanation: string;
+  priority: number;
+  image_id: string | null;
+};
+
+export type LlmModelsFilterState = PaginationQuery;
+
+export type LlmModelManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  name: string;
+  llm_provider_id: number;
+  llm_provider_name: string | null;
+  provider_model_id: string;
+  is_temperature_supported: boolean;
+};
+
+export type LlmModelMutationInput = {
+  id?: number;
+  name: string;
+  llm_provider_id: number;
+  provider_model_id: string;
+  is_temperature_supported: boolean;
+};
+
+export type LlmProvidersFilterState = PaginationQuery;
+
+export type LlmProviderManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  name: string;
+};
+
+export type LlmProviderMutationInput = {
+  id?: number;
+  name: string;
+};
+
+export type LlmPromptChainsFilterState = PaginationQuery & {
+  responseStatus: "all" | "has_responses" | "no_responses";
+};
+
+export type LlmPromptChainManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  caption_request_id: number;
+  response_count: number;
+  profile_email: string | null;
+  image_url: string | null;
+};
+
+export type LlmResponsesFilterState = PaginationQuery & {
+  llmModelIds: string;
+  humorFlavorIds: string;
+};
+
+export type LlmResponseManagementRow = {
+  id: string;
+  created_datetime_utc: string;
+  llm_model_response: string | null;
+  processing_time_seconds: number;
+  llm_model_id: number;
+  llm_model_name: string | null;
+  profile_id: string;
+  profile_email: string | null;
+  caption_request_id: number;
+  llm_system_prompt: string;
+  llm_user_prompt: string;
+  llm_temperature: number | null;
+  humor_flavor_id: number;
+  humor_flavor_slug: string | null;
+  llm_prompt_chain_id: number | null;
+  humor_flavor_step_id: number | null;
+  humor_flavor_step_order: number | null;
+  humor_flavor_step_description: string | null;
+};
+
+export type AllowedSignupDomainsFilterState = PaginationQuery;
+
+export type AllowedSignupDomainManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  apex_domain: string;
+};
+
+export type AllowedSignupDomainMutationInput = {
+  id?: number;
+  apex_domain: string;
+};
+
+export type WhitelistedEmailsFilterState = PaginationQuery;
+
+export type WhitelistedEmailManagementRow = {
+  id: number;
+  created_datetime_utc: string;
+  modified_datetime_utc: string | null;
+  email_address: string;
+};
+
+export type WhitelistedEmailMutationInput = {
+  id?: number;
+  email_address: string;
+};

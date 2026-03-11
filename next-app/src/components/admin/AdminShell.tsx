@@ -3,7 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ChevronLeft, FileText, Image, Menu, User, Users } from "lucide-react";
+import {
+  BarChart3,
+  Bot,
+  ChevronLeft,
+  FileText,
+  Image,
+  ListChecks,
+  Mail,
+  Menu,
+  ShieldCheck,
+  Sparkles,
+  User,
+  Users,
+  Waypoints,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -16,12 +30,44 @@ type AdminShellProps = {
   children: React.ReactNode;
 };
 
-const navItems = [
-  { href: "/admin/captions", label: "Captions", icon: FileText },
-  { href: "/admin/captions-stats", label: "Caption Stats", icon: BarChart3 },
-  { href: "/admin/images", label: "Images", icon: Image },
-  { href: "/admin/profiles", label: "Profiles", icon: Users },
-  { href: "/admin/alignment", label: "Alignment Stats", icon: Image },
+const navGroups = [
+  {
+    label: "Content",
+    items: [
+      { href: "/admin/captions", label: "Captions", icon: FileText },
+      { href: "/admin/images", label: "Images", icon: Image },
+      { href: "/admin/profiles", label: "Profiles", icon: Users },
+      { href: "/admin/caption-examples", label: "Caption Examples", icon: Sparkles },
+      { href: "/admin/terms", label: "Terms", icon: ListChecks },
+    ],
+  },
+  {
+    label: "Stats",
+    items: [
+      { href: "/admin/captions-stats", label: "Caption Stats", icon: BarChart3 },
+      { href: "/admin/alignment", label: "Alignment Stats", icon: Image },
+    ],
+  },
+  {
+    label: "Pipeline",
+    items: [
+      { href: "/admin/caption-requests", label: "Caption Requests", icon: FileText },
+      { href: "/admin/humor-flavors", label: "Humor Flavors", icon: Sparkles },
+      { href: "/admin/humor-flavor-steps", label: "Humor Flavor Steps", icon: Waypoints },
+      { href: "/admin/humor-mix", label: "Humor Mix", icon: Sparkles },
+      { href: "/admin/llm-prompt-chains", label: "LLM Prompt Chains", icon: Waypoints },
+      { href: "/admin/llm-responses", label: "LLM Responses", icon: Bot },
+      { href: "/admin/llm-models", label: "LLM Models", icon: Bot },
+      { href: "/admin/llm-providers", label: "LLM Providers", icon: Bot },
+    ],
+  },
+  {
+    label: "Access / Config",
+    items: [
+      { href: "/admin/allowed-signup-domains", label: "Allowed Signup Domains", icon: ShieldCheck },
+      { href: "/admin/whitelisted-emails", label: "Whitelisted Emails", icon: Mail },
+    ],
+  },
 ];
 
 export function AdminShell({ email, children }: AdminShellProps) {
@@ -33,7 +79,7 @@ export function AdminShell({ email, children }: AdminShellProps) {
       <motion.aside
         animate={{ width: collapsed ? 88 : 280 }}
         transition={{ type: "spring", stiffness: 200, damping: 24 }}
-        className="sticky top-0 h-screen shrink-0 border-r border-border/60 bg-white/70 p-4 backdrop-blur-lg"
+        className="sticky top-0 flex h-screen shrink-0 flex-col overflow-hidden border-r border-border/60 bg-white/70 p-3 backdrop-blur-lg"
       >
         <div className="flex items-center justify-between gap-3">
           {!collapsed && (
@@ -54,40 +100,51 @@ export function AdminShell({ email, children }: AdminShellProps) {
 
         {!collapsed && (
           <TooltipProvider>
-            <nav className="mt-8 flex flex-col gap-2">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                const Icon = item.icon;
-                return (
-                  <Tooltip key={item.href}>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          "group flex items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-sm font-medium transition",
-                          isActive
-                            ? "border-border/70 bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:border-border/70 hover:bg-white"
-                        )}
-                      >
-                        <Icon className="h-5 w-5" />
-                        <span className="whitespace-nowrap">{item.label}</span>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">{item.label}</TooltipContent>
-                  </Tooltip>
-                );
-              })}
+            <nav className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-4">
+              {navGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    {group.label}
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {group.items.map((item) => {
+                      const isActive = pathname === item.href;
+                      const Icon = item.icon;
+                      return (
+                        <Tooltip key={item.href}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={item.href}
+                              className={cn(
+                                "group flex items-center gap-3 rounded-2xl border border-transparent px-3 py-2.5 text-[13px] font-medium transition",
+                                isActive
+                                  ? "border-border/70 bg-primary text-primary-foreground shadow-sm"
+                                  : "text-muted-foreground hover:border-border/70 hover:bg-white"
+                              )}
+                            >
+                              <Icon className="h-4 w-4" />
+                              <span className="whitespace-nowrap">{item.label}</span>
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">{item.label}</TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              </div>
             </nav>
           </TooltipProvider>
         )}
 
-        <div className="mt-auto flex flex-col gap-3 pt-6">
+        <div className="mt-3 flex flex-col gap-2 border-t border-border/50 pt-3">
           {!collapsed && (
             <>
-              <div className="rounded-2xl border border-border/70 bg-white/80 p-3 text-xs shadow-sm">
+              <div className="rounded-2xl border border-border/70 bg-white/80 p-2.5 text-xs shadow-sm">
                 <p className="uppercase tracking-[0.2em] text-muted-foreground">Signed in</p>
-                <p className="mt-2 text-sm font-medium text-foreground">
+                <p className="mt-1.5 truncate text-sm font-medium text-foreground" title={email ?? "Unknown"}>
                   {email ?? "Unknown"}
                 </p>
               </div>
