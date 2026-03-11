@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { canAccessViaBootstrap } from "@/lib/auth/bootstrap-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type SuperadminProfile = {
@@ -25,10 +26,18 @@ export async function requireSuperadmin() {
     .select("id,email,is_superadmin")
     .eq("id", user.id)
     .maybeSingle<SuperadminProfile>();
+  const isBootstrapAllowed = canAccessViaBootstrap(user.email);
 
-  if (error || !profile?.is_superadmin) {
+  if (!isBootstrapAllowed && (error || !profile?.is_superadmin)) {
     redirect("/not-authorized");
   }
 
-  return { user, profile };
+  return {
+    user,
+    profile: profile ?? {
+      id: user.id,
+      email: user.email ?? null,
+      is_superadmin: false,
+    },
+  };
 }

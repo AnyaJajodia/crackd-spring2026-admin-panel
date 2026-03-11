@@ -1,11 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { canAccessViaBootstrap, isBootstrapAccessEnabled } from "@/lib/auth/bootstrap-access";
 
 export async function GET(request: NextRequest) {
-  if (process.env.ENABLE_BOOTSTRAP !== "true") {
-    return NextResponse.redirect(new URL("/", request.url));
+  const supabaseResponse = NextResponse.next();
+  const withSupabaseCookies = (outgoing: NextResponse) => {
+    for (const cookie of supabaseResponse.cookies.getAll()) {
+      outgoing.cookies.set(cookie);
+    }
+    return outgoing;
+  };
+
+  if (!isBootstrapAccessEnabled()) {
+    return withSupabaseCookies(NextResponse.redirect(new URL("/", request.url)));
   }
 
   const supabase = createServerClient(
@@ -16,8 +24,12 @@ export async function GET(request: NextRequest) {
         get(name) {
           return request.cookies.get(name)?.value;
         },
-        set() {},
-        remove() {},
+        set(name, value, options) {
+          supabaseResponse.cookies.set({ name, value, ...options });
+        },
+        remove(name, options) {
+          supabaseResponse.cookies.set({ name, value: "", ...options });
+        },
       },
     }
   );
@@ -26,37 +38,21 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return withSupabaseCookies(NextResponse.redirect(new URL("/", request.url)));
   }
 
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
 
   if (!token || token !== process.env.ADMIN_BOOTSTRAP_SECRET) {
-    return NextResponse.json({ error: "Invalid token." }, { status: 403 });
+    return withSupabaseCookies(NextResponse.json({ error: "Invalid token." }, { status: 403 }));
   }
 
-  const allowedEmails = (process.env.BOOTSTRAP_ALLOWED_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (!user.email || !allowedEmails.includes(user.email.toLowerCase())) {
-    return NextResponse.json({ error: "Email not allowlisted." }, { status: 403 });
+  if (!canAccessViaBootstrap(user.email)) {
+    return withSupabaseCookies(NextResponse.json({ error: "Email not allowlisted." }, { status: 403 }));
   }
 
-  const admin = createSupabaseAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("is_superadmin")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profile?.is_superadmin) {
-    return NextResponse.redirect(new URL("/admin/captions?bootstrapped=already", request.url));
-  }
-
-  await admin.from("profiles").update({ is_superadmin: true }).eq("id", user.id);
-
-  return NextResponse.redirect(new URL("/admin/captions?bootstrapped=success", request.url));
+  return withSupabaseCookies(
+    NextResponse.redirect(new URL("/admin/captions?bootstrapped=success", request.url))
+  );
 }

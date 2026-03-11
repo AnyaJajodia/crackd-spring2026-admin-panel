@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { canAccessViaBootstrap } from "@/lib/auth/bootstrap-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const ALLOWED_IMAGE_TYPES = new Set([
@@ -76,18 +77,19 @@ export async function getAdminImageRequestContext(accessToken: string | null) {
     .select("id,is_superadmin")
     .eq("id", user.id)
     .maybeSingle<{ id: string; is_superadmin: boolean | null }>();
+  const isBootstrapAllowed = canAccessViaBootstrap(user.email);
 
-  if (error) {
+  if (error && !isBootstrapAllowed) {
     throw Object.assign(new Error(error.message), { status: 500 });
   }
 
-  if (!profile?.is_superadmin) {
+  if (!isBootstrapAllowed && !profile?.is_superadmin) {
     throw Object.assign(new Error("Not authorized."), { status: 403 });
   }
 
   return {
     user,
-    profileId: profile.id,
+    profileId: profile?.id ?? user.id,
     admin: createSupabaseAdminClient(),
   };
 }
