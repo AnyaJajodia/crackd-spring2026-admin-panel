@@ -60,11 +60,11 @@ export async function getWhitelistedEmailsPage(
 export async function createWhitelistedEmail(
   payload: WhitelistedEmailMutationInput
 ): Promise<WhitelistedEmailManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("whitelist_email_addresses")
-    .insert({ email_address: payload.email_address })
+    .insert({ email_address: payload.email_address, created_by_user_id: profile.id, modified_by_user_id: profile.id })
     .select("id,created_datetime_utc,modified_datetime_utc,email_address")
     .single<WhitelistedEmailManagementRow>();
 
@@ -78,7 +78,7 @@ export async function createWhitelistedEmail(
 export async function updateWhitelistedEmail(
   payload: WhitelistedEmailMutationInput
 ): Promise<WhitelistedEmailManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing whitelisted email id.");
   }
@@ -89,6 +89,7 @@ export async function updateWhitelistedEmail(
     .update({
       email_address: payload.email_address,
       modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select("id,created_datetime_utc,modified_datetime_utc,email_address")

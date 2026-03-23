@@ -102,7 +102,7 @@ export async function getTermsPage(filters: TermsFilterState): Promise<Paginated
 }
 
 export async function createTerm(payload: TermMutationInput): Promise<TermManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("terms")
@@ -112,6 +112,8 @@ export async function createTerm(payload: TermMutationInput): Promise<TermManage
       example: payload.example,
       priority: payload.priority,
       term_type_id: payload.term_type_id,
+      created_by_user_id: profile.id,
+      modified_by_user_id: profile.id,
     })
     .select(TERM_SELECT)
     .single<Omit<TermManagementRow, "term_type_name">>();
@@ -127,7 +129,7 @@ export async function createTerm(payload: TermMutationInput): Promise<TermManage
 }
 
 export async function updateTerm(payload: TermMutationInput): Promise<TermManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing term id.");
   }
@@ -142,6 +144,7 @@ export async function updateTerm(payload: TermMutationInput): Promise<TermManage
       priority: payload.priority,
       term_type_id: payload.term_type_id,
       modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select(TERM_SELECT)

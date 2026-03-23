@@ -76,7 +76,7 @@ export async function getProfilesPage(
 }
 
 export async function updateProfileRow(payload: ProfileUpdateInput): Promise<ProfileManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
 
   const admin = createSupabaseAdminClient();
 
@@ -96,7 +96,7 @@ export async function updateProfileRow(payload: ProfileUpdateInput): Promise<Pro
 
   const result = await admin
     .from("profiles")
-    .update(payload.changes)
+    .update({ ...payload.changes, modified_datetime_utc: new Date().toISOString(), modified_by_user_id: profile.id })
     .eq("id", payload.id)
     .select(PROFILE_SELECT)
     .single<ProfileManagementRow>();

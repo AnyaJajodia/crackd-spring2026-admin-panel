@@ -100,7 +100,7 @@ export async function getLlmModelsPage(
 }
 
 export async function createLlmModel(payload: LlmModelMutationInput): Promise<LlmModelManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("llm_models")
@@ -109,6 +109,8 @@ export async function createLlmModel(payload: LlmModelMutationInput): Promise<Ll
       llm_provider_id: payload.llm_provider_id,
       provider_model_id: payload.provider_model_id,
       is_temperature_supported: payload.is_temperature_supported,
+      created_by_user_id: profile.id,
+      modified_by_user_id: profile.id,
     })
     .select(LLM_MODEL_SELECT)
     .single<Omit<LlmModelManagementRow, "llm_provider_name">>();
@@ -124,7 +126,7 @@ export async function createLlmModel(payload: LlmModelMutationInput): Promise<Ll
 }
 
 export async function updateLlmModel(payload: LlmModelMutationInput): Promise<LlmModelManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing LLM model id.");
   }
@@ -137,6 +139,8 @@ export async function updateLlmModel(payload: LlmModelMutationInput): Promise<Ll
       llm_provider_id: payload.llm_provider_id,
       provider_model_id: payload.provider_model_id,
       is_temperature_supported: payload.is_temperature_supported,
+      modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select(LLM_MODEL_SELECT)

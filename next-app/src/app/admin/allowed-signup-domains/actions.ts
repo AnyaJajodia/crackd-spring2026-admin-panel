@@ -60,11 +60,11 @@ export async function getAllowedSignupDomainsPage(
 export async function createAllowedSignupDomain(
   payload: AllowedSignupDomainMutationInput
 ): Promise<AllowedSignupDomainManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("allowed_signup_domains")
-    .insert({ apex_domain: payload.apex_domain })
+    .insert({ apex_domain: payload.apex_domain, created_by_user_id: profile.id, modified_by_user_id: profile.id })
     .select("id,created_datetime_utc,apex_domain")
     .single<AllowedSignupDomainManagementRow>();
 
@@ -78,7 +78,7 @@ export async function createAllowedSignupDomain(
 export async function updateAllowedSignupDomain(
   payload: AllowedSignupDomainMutationInput
 ): Promise<AllowedSignupDomainManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing domain id.");
   }
@@ -86,7 +86,7 @@ export async function updateAllowedSignupDomain(
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("allowed_signup_domains")
-    .update({ apex_domain: payload.apex_domain })
+    .update({ apex_domain: payload.apex_domain, modified_datetime_utc: new Date().toISOString(), modified_by_user_id: profile.id })
     .eq("id", payload.id)
     .select("id,created_datetime_utc,apex_domain")
     .single<AllowedSignupDomainManagementRow>();

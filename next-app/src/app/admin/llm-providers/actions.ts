@@ -60,11 +60,11 @@ export async function getLlmProvidersPage(
 export async function createLlmProvider(
   payload: LlmProviderMutationInput
 ): Promise<LlmProviderManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("llm_providers")
-    .insert({ name: payload.name })
+    .insert({ name: payload.name, created_by_user_id: profile.id, modified_by_user_id: profile.id })
     .select("id,created_datetime_utc,name")
     .single<LlmProviderManagementRow>();
 
@@ -78,7 +78,7 @@ export async function createLlmProvider(
 export async function updateLlmProvider(
   payload: LlmProviderMutationInput
 ): Promise<LlmProviderManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing LLM provider id.");
   }
@@ -86,7 +86,7 @@ export async function updateLlmProvider(
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("llm_providers")
-    .update({ name: payload.name })
+    .update({ name: payload.name, modified_datetime_utc: new Date().toISOString(), modified_by_user_id: profile.id })
     .eq("id", payload.id)
     .select("id,created_datetime_utc,name")
     .single<LlmProviderManagementRow>();

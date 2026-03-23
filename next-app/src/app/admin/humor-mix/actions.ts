@@ -83,12 +83,12 @@ export async function getHumorMixPage(
 export async function updateHumorMixRow(
   payload: HumorMixUpdateInput
 ): Promise<HumorMixManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
 
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("humor_flavor_mix")
-    .update({ caption_count: payload.caption_count })
+    .update({ caption_count: payload.caption_count, modified_datetime_utc: new Date().toISOString(), modified_by_user_id: profile.id })
     .eq("id", payload.id)
     .select("id,created_datetime_utc,humor_flavor_id,caption_count")
     .single<Omit<HumorMixManagementRow, "humor_flavor_slug" | "humor_flavor_description">>();

@@ -132,7 +132,7 @@ export async function getCaptionsPage(
 export async function updateCaptionRow(
   payload: CaptionUpdateInput
 ): Promise<Pick<CaptionManagementRow, "id" | "is_public" | "is_featured">> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
 
   const admin = createSupabaseAdminClient();
   const result = await admin
@@ -140,6 +140,8 @@ export async function updateCaptionRow(
     .update({
       is_public: payload.is_public,
       is_featured: payload.is_featured,
+      modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select("id,is_public,is_featured")

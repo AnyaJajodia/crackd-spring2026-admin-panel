@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
         image_description: body.imageDescription?.trim() ? body.imageDescription.trim() : null,
         additional_context: body.additionalContext?.trim() ? body.additionalContext.trim() : null,
         modified_datetime_utc: modifiedAt,
+        modified_by_user_id: profileId,
       })
       .eq("id", registerBody.imageId)
       .select(IMAGE_ROW_SELECT)
@@ -232,6 +233,8 @@ export async function POST(request: NextRequest) {
         additional_context: body.additionalContext?.trim() ? body.additionalContext.trim() : null,
         profile_id: profileId,
         modified_datetime_utc: modifiedAt,
+        created_by_user_id: profileId,
+        modified_by_user_id: profileId,
       })
       .select(IMAGE_ROW_SELECT)
       .single<{

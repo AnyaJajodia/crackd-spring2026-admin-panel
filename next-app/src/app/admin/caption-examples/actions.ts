@@ -89,7 +89,7 @@ export async function getCaptionExamplesPage(
 export async function createCaptionExample(
   payload: CaptionExampleMutationInput
 ): Promise<CaptionExampleManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   const admin = createSupabaseAdminClient();
   const result = await admin
     .from("caption_examples")
@@ -99,6 +99,8 @@ export async function createCaptionExample(
       explanation: payload.explanation,
       priority: payload.priority,
       image_id: payload.image_id,
+      created_by_user_id: profile.id,
+      modified_by_user_id: profile.id,
     })
     .select(CAPTION_EXAMPLE_SELECT)
     .single<Omit<CaptionExampleManagementRow, "image_url">>();
@@ -116,7 +118,7 @@ export async function createCaptionExample(
 export async function updateCaptionExample(
   payload: CaptionExampleMutationInput
 ): Promise<CaptionExampleManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
   if (!payload.id) {
     throw new Error("Missing caption example id.");
   }
@@ -131,6 +133,7 @@ export async function updateCaptionExample(
       priority: payload.priority,
       image_id: payload.image_id,
       modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select(CAPTION_EXAMPLE_SELECT)

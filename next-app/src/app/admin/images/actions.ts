@@ -82,7 +82,7 @@ export async function getImagesPage(
 }
 
 export async function updateImageRow(payload: ImageUpdateInput): Promise<ImageManagementRow> {
-  await requireSuperadmin();
+  const { profile } = await requireSuperadmin();
 
   const admin = createSupabaseAdminClient();
   const result = await admin
@@ -92,6 +92,8 @@ export async function updateImageRow(payload: ImageUpdateInput): Promise<ImageMa
       is_public: payload.is_public,
       additional_context: payload.additional_context || null,
       image_description: payload.image_description || null,
+      modified_datetime_utc: new Date().toISOString(),
+      modified_by_user_id: profile.id,
     })
     .eq("id", payload.id)
     .select(IMAGE_SELECT)
