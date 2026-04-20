@@ -46,6 +46,7 @@ const navGroups = [
     items: [
       { href: "/admin/captions-stats", label: "Caption Stats", icon: BarChart3 },
       { href: "/admin/alignment", label: "Alignment Stats", icon: Image },
+      { href: "/admin/caption-popularity", label: "Caption Popularity", icon: BarChart3 },
     ],
   },
   {
